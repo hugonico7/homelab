@@ -1,0 +1,48 @@
+---
+services:
+  proxy-manager:
+    image: "jc21/nginx-proxy-manager:latest"
+    container_name: proxy-manager
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: 172.18.0.3
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - "80:80" # Public HTTP Port
+      - "443:443" # Public HTTPS Port
+      # Add any other Stream port you want to exposel
+      # - '21:21' # FTP
+      - "8000:8000"
+    environment:
+      # Mysql/Maria connection parameters:
+      DB_MYSQL_HOST: ""
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: ""
+      DB_MYSQL_PASSWORD: ""
+      DB_MYSQL_NAME: ""
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    depends_on:
+      - mysql-proxy-manager
+
+  mysql-proxy-manager:
+    container_name: mysql-proxy-manager
+    image: mariadb
+    restart: always
+    networks:
+      services:
+        ipv4_address: 172.18.0.4
+    environment:
+      MARIADB_USER: ""
+      MARIADB_PASSWORD: ""
+      MARIADB_DATABASE: ""
+      MARIADB_ROOT_PASSWORD: ""
+      MARIADB_AUTO_UPGRADE: "1"
+
+networks:
+  services:
+    external: true
