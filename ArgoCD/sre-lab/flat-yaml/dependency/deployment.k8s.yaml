@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: sre-lab-latency
+  name: sre-latency-lab-mock-dependency
+  labels:
+    app: sre-latency-lab-mock-dependency
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sre-latency-lab-mock-dependency
+  template:
+    metadata:
+      labels:
+        app: sre-latency-lab-mock-dependency
+    spec:
+      containers:
+        - name: sre-latency-lab-mock-dependency
+          image: hugonico7/sre-latency-lab-mock-dependency:1.1.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "sre-mock-dependency"
+            - name: "DELAY_MS"
+              value: "2000"
+            - name: "OTEL_ENDPOINT"
+              value: "otel-collector.monitoring.svc.cluster.local"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.instance.id=$(POD_NAME)
